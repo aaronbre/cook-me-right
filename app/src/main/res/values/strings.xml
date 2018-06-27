@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Cook Me Right</string>
+    <string name="image_of_recipe_content_description">Image of recipe</string>
+    <string name="list_item_amount_of_steps">Amount of steps:</string>
+    <string name="step_list_item_number_label">Step </string>
+    <string name="step_list_item_description_label">Description</string>
+    <string name="ingredients">Ingredients</string>
+    <string name="button_next">Next</string>
+    <string name="button_previous">Previous</string>
 </resources>
