@@ -5,12 +5,14 @@
     android:layout_height="match_parent"
     android:orientation="horizontal">
 
+
+
     <FrameLayout
         android:id="@+id/master_list_fragment_container"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/vertical_third"/>
+        app:layout_constraintEnd_toStartOf="@id/vertical_third"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <android.support.constraint.Guideline
         android:id="@+id/vertical_third"
@@ -30,7 +32,7 @@
         android:id="@+id/master_detail_fragment_container"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        app:layout_constraintStart_toEndOf="@id/tablet_detail_divider"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tablet_detail_divider"/>
 
 </android.support.constraint.ConstraintLayout>

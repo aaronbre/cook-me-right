@@ -1,18 +1,13 @@
 package com.example.aaronbrecher.cookmeright.ui;
 
-import android.content.Intent;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.example.aaronbrecher.cookmeright.R;
-import com.example.aaronbrecher.cookmeright.models.Recipe;
 import com.example.aaronbrecher.cookmeright.models.Step;
+import com.example.aaronbrecher.cookmeright.ui.fragments.RecipeDetailMasterDetailFragment;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -12,15 +12,13 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 
 import com.example.aaronbrecher.cookmeright.R;
+import com.example.aaronbrecher.cookmeright.adapters.RecipeListAdapter;
 import com.example.aaronbrecher.cookmeright.models.Recipe;
 import com.example.aaronbrecher.cookmeright.network.RecipeApiUtils;
 import com.example.aaronbrecher.cookmeright.network.RecipeService;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 

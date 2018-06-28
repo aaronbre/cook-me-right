@@ -1,15 +1,15 @@
-package com.example.aaronbrecher.cookmeright.ui;
+package com.example.aaronbrecher.cookmeright.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.aaronbrecher.cookmeright.databinding.StepListItemBinding;
 import com.example.aaronbrecher.cookmeright.models.Step;
+import com.example.aaronbrecher.cookmeright.ui.ListItemClickListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

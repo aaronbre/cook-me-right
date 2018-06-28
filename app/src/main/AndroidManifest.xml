@@ -21,9 +21,14 @@
         <activity
             android:name=".ui.RecipeDetailActivity"
             android:launchMode="singleTop"
-            android:parentActivityName=".ui.MainActivity" />
+            android:parentActivityName=".ui.MainActivity"/>
         <activity android:name=".ui.StepDetailActivity"
             android:parentActivityName=".ui.RecipeDetailActivity"/>
+        <receiver android:name=".ui.fragments.RecipeDetailMasterDetailFragment$MediaReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

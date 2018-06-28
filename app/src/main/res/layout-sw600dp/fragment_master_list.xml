@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+    <TextView
+        android:id="@+id/master_list_ingredients_heading"
+        style="@style/IngredientsHeading"
+        android:text="@string/ingredients" />
+
+    <TextView
+        android:id="@+id/master_list_ingredients"
+        style="@style/IngredientsBody"/>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider_color" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/master_list_step_list"
