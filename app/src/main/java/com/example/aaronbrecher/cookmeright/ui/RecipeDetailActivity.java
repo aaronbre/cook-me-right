@@ -3,12 +3,17 @@ package com.example.aaronbrecher.cookmeright.ui;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Parcelable;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.aaronbrecher.cookmeright.R;
 import com.example.aaronbrecher.cookmeright.ViewModels.RecipeDetailViewModel;
@@ -34,6 +39,7 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
     private static final String TAG_DETAIL_FRAGMENT = "detail fragment";
 
     private RecipeDetailViewModel mViewModel;
+    private Recipe mRecipe;
     private Toolbar mToolbar;
     private ViewPager mViewPager;
     private TabLayout mTabLayout;
@@ -44,20 +50,17 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(savedInstanceState != null && savedInstanceState.containsKey(TAG_DETAIL_FRAGMENT)){
-            mDetailFragment = getSupportFragmentManager().getFragment(savedInstanceState, TAG_DETAIL_FRAGMENT);
-        }
         setContentView(R.layout.activity_recipe_detail);
 
         //set up a viewModel this will be useful working with multiple fragments especially
         //for the tablet where everything will be in this activity
-        Recipe recipe = getIntent().getParcelableExtra(INTENT_EXTRA_RECIPE);
+        mRecipe = getIntent().getParcelableExtra(INTENT_EXTRA_RECIPE);
         mViewModel = ViewModelProviders.of(this).get(RecipeDetailViewModel.class);
-        if (recipe != null) {
-            setTitle(recipe.getName());
-            mViewModel.setRecipe(recipe);
-            mViewModel.setSteps(recipe.getSteps());
-            mViewModel.setIngredients(recipe.getIngredients());
+        if (mRecipe != null) {
+            setTitle(mRecipe.getName());
+            mViewModel.setRecipe(mRecipe);
+            mViewModel.setSteps(mRecipe.getSteps());
+            mViewModel.setIngredients(mRecipe.getIngredients());
         }
 
         //if the device is a phone will set up a tab layout for ingredients and steps
@@ -85,10 +88,8 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
             bundle.putParcelable(FRAGMENT_ARGS_STEP, mViewModel.getSteps().get(0));
             bundle.putParcelableArrayList(FRAGMENT_ARGS_STEP_LIST, new ArrayList<>(mViewModel.getSteps()));
             bundle.putString(FRAGMENT_ARGS_RECIPE_NAME, mViewModel.getRecipe().getName());
-            if(mDetailFragment == null){
-                mDetailFragment = new RecipeDetailMasterDetailFragment();
-                mDetailFragment.setArguments(bundle);
-            }
+            mDetailFragment = new RecipeDetailMasterDetailFragment();
+            mDetailFragment.setArguments(bundle);
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.master_detail_fragment_container, mDetailFragment, TAG_DETAIL_FRAGMENT)
@@ -117,11 +118,21 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if(mDetailFragment != null){
-            getSupportFragmentManager().putFragment(outState, TAG_DETAIL_FRAGMENT, mDetailFragment);
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_with_add_to_widget_button, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menu_item_add_to_widget) {
+            //TODO update the widget
+            Toast.makeText(this, R.string.added_to_widget_toast, Toast.LENGTH_SHORT).show();
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

@@ -28,7 +28,9 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements ListItemClickListener {
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String INTENT_EXTRA_RECIPE = "recipe";
+    //TODO only for testing for production change INTENT_EXTRA to private and remove test recipe
+    public static final String INTENT_EXTRA_RECIPE = "recipe";
+    public Recipe testRecipe;
     private RecyclerView mRecyclerView;
     private ImageView mProgress;
     private RecipeService mRecipeService = RecipeApiUtils.createService();
@@ -55,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
             @Override
             public void onResponse(@NonNull Call<List<Recipe>> call, @NonNull Response<List<Recipe>> response) {
                 List<Recipe> recipes = response.body();
+                testRecipe = recipes.get(0);
                 mAdapter.swapLists(recipes);
                 hideLoadingAndShowList();
             }

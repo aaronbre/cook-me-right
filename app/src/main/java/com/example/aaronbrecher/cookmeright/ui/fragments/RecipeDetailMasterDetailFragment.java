@@ -50,6 +50,8 @@ import static com.example.aaronbrecher.cookmeright.ui.StepDetailActivity.FRAGMEN
 public class RecipeDetailMasterDetailFragment extends Fragment implements Player.EventListener {
     private static final String MEDIA_SESSION_TAG = "cookMeRightMediaSession";
     private static final String POSITION_KEY = "video position";
+    private static final String PLAY_KEY = "isPlay";
+
     private SimpleExoPlayerView mExoPlayerView;
     private SimpleExoPlayer mExoPlayer;
     private Button mPreviousButton;
@@ -63,6 +65,7 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
     private TextView mInstructionsHeading;
     private TextView mInstructions;
     private PlaybackStateCompat.Builder mStateBuilder;
+    private boolean mPlayWhenReady;
 
     public void setStep(Step step) {
         mStep = step;
@@ -73,16 +76,19 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if(savedInstanceState!= null && savedInstanceState.containsKey(POSITION_KEY)){
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null && savedInstanceState.containsKey(POSITION_KEY)) {
             mVideoPosition = savedInstanceState.getLong(POSITION_KEY);
+            mPlayWhenReady = savedInstanceState.getBoolean(PLAY_KEY);
         }
+
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
         View rootView = inflater.inflate(R.layout.fragment_master_detail, container, false);
         mExoPlayerView = rootView.findViewById(R.id.player_view);
         mPreviousButton = rootView.findViewById(R.id.step_detail_previous);
@@ -94,6 +100,7 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
         mStep = getArguments().getParcelable(StepDetailActivity.FRAGMENT_ARGS_STEP);
         mStepList = getArguments().getParcelableArrayList(FRAGMENT_ARGS_STEP_LIST);
         mRecipeName = getArguments().getString(FRAGMENT_ARGS_RECIPE_NAME);
+
         initializeMediaSession();
         initializeExoPlayer();
         updateUiAndPlayer();
@@ -118,15 +125,16 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onPause() {
+        super.onPause();
         releasePlayer();
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putLong(POSITION_KEY, mExoPlayer.getCurrentPosition());
+        outState.putLong(POSITION_KEY,mVideoPosition);
+        outState.putBoolean(PLAY_KEY, mPlayWhenReady);
     }
 
     //initial setup on the Exoplayer
@@ -191,14 +199,18 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
         MediaSource mediaSource = new ExtractorMediaSource(movieUri, new DefaultDataSourceFactory(getActivity(), userAgent),
                 new DefaultExtractorsFactory(), null, null);
         mExoPlayer.prepare(mediaSource);
-        mExoPlayer.seekTo(mVideoPosition);
-        mExoPlayer.setPlayWhenReady(true);
+        if(mVideoPosition != 0) mExoPlayer.seekTo(mVideoPosition);
+        mExoPlayer.setPlayWhenReady(mPlayWhenReady);
     }
 
     private void releasePlayer() {
-        mExoPlayer.stop();
-        mExoPlayer.release();
-        mExoPlayer = null;
+        if (mExoPlayer != null) {
+            mVideoPosition = mExoPlayer.getCurrentPosition();
+            mPlayWhenReady = mExoPlayer.getPlayWhenReady();
+            mExoPlayer.stop();
+            mExoPlayer.release();
+            mExoPlayer = null;
+        }
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
