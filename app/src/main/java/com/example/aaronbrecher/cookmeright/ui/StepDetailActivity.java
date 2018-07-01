@@ -44,8 +44,6 @@ public class StepDetailActivity extends AppCompatActivity {
                 .commit();
     }
 
-    //TODO move this functionality out of the activity into the fragment, will require adding the
-    //list of steps to the fragment
     /**
      * Function to create the detail fragment adding to it the correct step data
      * @return

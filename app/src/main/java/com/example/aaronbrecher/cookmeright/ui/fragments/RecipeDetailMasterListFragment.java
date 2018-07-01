@@ -19,6 +19,7 @@ import com.example.aaronbrecher.cookmeright.adapters.StepListAdapter;
 import com.example.aaronbrecher.cookmeright.models.Ingredient;
 import com.example.aaronbrecher.cookmeright.ui.ListItemClickListener;
 import com.example.aaronbrecher.cookmeright.ui.RecipeDetailActivity;
+import com.example.aaronbrecher.cookmeright.utils.UiUtils;
 
 import java.text.DecimalFormat;
 import java.util.List;
@@ -61,20 +62,23 @@ public class RecipeDetailMasterListFragment extends Fragment {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
         //if the device is a tablet need to set up the ingredients here. on a phone
         //ingredients are in a seperate tab/fragment
-        if(getResources().getBoolean(R.bool.isTablet)) setUpIngredients((TextView) rootView.findViewById(R.id.master_list_ingredients));
+        if(getResources().getBoolean(R.bool.isTablet)){
+            TextView textView = rootView.findViewById(R.id.master_list_ingredients);
+            textView.setText(UiUtils.setUpIngredientsList(mViewModel.getIngredients()));
+        }
         return rootView;
 
     }
 
-    private void setUpIngredients(TextView textView) {
-        List<Ingredient> ingredients = mViewModel.getIngredients();
-        StringBuilder builder = new StringBuilder();
-        DecimalFormat dm = new DecimalFormat("0.#");
-        for(Ingredient ingredient : ingredients){
-            String line = String.format(Locale.getDefault(),
-                   dm.format(ingredient.getQuantity()) + " %s %s \n",ingredient.getMeasure(), ingredient.getIngredient());
-            builder.append(line);
-        }
-        textView.setText(builder.toString());
-    }
+//    private void setUpIngredients(TextView textView) {
+//        List<Ingredient> ingredients = mViewModel.getIngredients();
+//        StringBuilder builder = new StringBuilder();
+//        DecimalFormat dm = new DecimalFormat("0.#");
+//        for(Ingredient ingredient : ingredients){
+//            String line = String.format(Locale.getDefault(),
+//                   dm.format(ingredient.getQuantity()) + " %s %s \n",ingredient.getMeasure(), ingredient.getIngredient());
+//            builder.append(line);
+//        }
+//        textView.setText(builder.toString());
+//    }
 }

@@ -3,6 +3,7 @@ package com.example.aaronbrecher.cookmeright.ui;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -22,6 +23,8 @@ import com.example.aaronbrecher.cookmeright.models.Recipe;
 import com.example.aaronbrecher.cookmeright.models.Step;
 import com.example.aaronbrecher.cookmeright.ui.fragments.RecipeDetailMasterDetailFragment;
 import com.example.aaronbrecher.cookmeright.ui.fragments.RecipeDetailMasterListFragment;
+import com.example.aaronbrecher.cookmeright.utils.PrefsUtils;
+import com.example.aaronbrecher.cookmeright.widget.RecipeWidgetService;
 
 import java.util.ArrayList;
 
@@ -129,8 +132,11 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.menu_item_add_to_widget) {
-            //TODO update the widget
+            PrefsUtils.addRecipeToPrefs(mRecipe, PreferenceManager.getDefaultSharedPreferences(this));
             Toast.makeText(this, R.string.added_to_widget_toast, Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, RecipeWidgetService.class);
+            intent.setAction(RecipeWidgetService.ACTION_UPDATE_RECIPE_WIDGET);
+            this.startService(intent);
         }
         return super.onOptionsItemSelected(item);
     }

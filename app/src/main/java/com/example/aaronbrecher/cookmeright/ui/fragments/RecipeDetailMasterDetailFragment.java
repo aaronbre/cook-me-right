@@ -24,6 +24,7 @@ import android.widget.TextView;
 import com.example.aaronbrecher.cookmeright.R;
 import com.example.aaronbrecher.cookmeright.models.Step;
 import com.example.aaronbrecher.cookmeright.ui.StepDetailActivity;
+import com.example.aaronbrecher.cookmeright.utils.ExoplayerUtils;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -82,7 +83,6 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
             mVideoPosition = savedInstanceState.getLong(POSITION_KEY);
             mPlayWhenReady = savedInstanceState.getBoolean(PLAY_KEY);
         }
-
     }
 
     @Nullable
@@ -102,7 +102,8 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
         mRecipeName = getArguments().getString(FRAGMENT_ARGS_RECIPE_NAME);
 
         initializeMediaSession();
-        initializeExoPlayer();
+        mExoPlayer = ExoplayerUtils.initializeExoPlayer(mExoPlayer,getActivity(), this);
+        mExoPlayerView.setPlayer(mExoPlayer);
         updateUiAndPlayer();
 
         //set a listener on next and previous button to load in the correct step
@@ -137,16 +138,6 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
         outState.putBoolean(PLAY_KEY, mPlayWhenReady);
     }
 
-    //initial setup on the Exoplayer
-    private void initializeExoPlayer() {
-        if (mExoPlayer == null) {
-            TrackSelector trackSelector = new DefaultTrackSelector();
-            mExoPlayer = ExoPlayerFactory.newSimpleInstance(getActivity(), trackSelector);
-            mExoPlayerView.setPlayer(mExoPlayer);
-            mExoPlayer.addListener(this);
-        }
-    }
-
     private void initializeMediaSession() {
         mMediaSession = new MediaSessionCompat(getActivity(), MEDIA_SESSION_TAG);
         mMediaSession.setMediaButtonReceiver(null);
@@ -168,7 +159,7 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
         mInstructions.setText(mStep.getDescription());
         disableIllegalButton();
         getActivity().setTitle(mRecipeName + " - Step " + (mStep.getId() + 1));
-        setPlayerToNewMediaSource();
+        ExoplayerUtils.setPlayerToNewMediaSource(mExoPlayer, getActivity(), mStep.getVideoURL(),mVideoPosition,mPlayWhenReady);
     }
 
     //if user is at the first step disable the previous button if last disable the next button
@@ -183,24 +174,6 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
         } else {
             mNextButton.setEnabled(true);
         }
-    }
-
-    //set the player to the new media source based on the step data
-    private void setPlayerToNewMediaSource() {
-        mExoPlayer.stop();
-        String userAgent = Util.getUserAgent(getActivity(), "CookMeRight");
-        String uriAsString = mStep.getVideoURL();
-        //if there is no associated video remove the previous video from the player
-        if (uriAsString == null || uriAsString.isEmpty()) {
-            mExoPlayer.prepare(null);
-            return;
-        }
-        Uri movieUri = Uri.parse(uriAsString);
-        MediaSource mediaSource = new ExtractorMediaSource(movieUri, new DefaultDataSourceFactory(getActivity(), userAgent),
-                new DefaultExtractorsFactory(), null, null);
-        mExoPlayer.prepare(mediaSource);
-        if(mVideoPosition != 0) mExoPlayer.seekTo(mVideoPosition);
-        mExoPlayer.setPlayWhenReady(mPlayWhenReady);
     }
 
     private void releasePlayer() {
@@ -275,7 +248,7 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
 
     }
 
-    private class CookMeSessionCallback extends MediaSessionCompat.Callback {
+    public class CookMeSessionCallback extends MediaSessionCompat.Callback {
         @Override
         public void onPlay() {
             mExoPlayer.setPlayWhenReady(true);

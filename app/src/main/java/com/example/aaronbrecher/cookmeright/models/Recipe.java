@@ -1,8 +1,11 @@
 package com.example.aaronbrecher.cookmeright.models;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.example.aaronbrecher.cookmeright.R;
+import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -78,6 +81,26 @@ public class Recipe implements Parcelable {
         this.image = image;
     }
 
+    public Recipe() {
+    }
+
+    public static String convertToJsonString(Recipe recipe){
+        Gson gson = new Gson();
+        return gson.toJson(recipe);
+    }
+
+    public static Recipe convertFromJson(String json){
+        Gson gson = new Gson();
+        if(json.isEmpty()) return null;
+        return gson.fromJson(json, Recipe.class);
+    }
+
+    public static Recipe getMockRecipe(Context context){
+        Gson gson = new Gson();
+        String json = context.getResources().getString(R.string.mock_recipe_json);
+        return gson.fromJson(json, Recipe.class);
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -91,9 +114,6 @@ public class Recipe implements Parcelable {
         dest.writeList(this.steps);
         dest.writeValue(this.servings);
         dest.writeString(this.image);
-    }
-
-    public Recipe() {
     }
 
     protected Recipe(Parcel in) {
