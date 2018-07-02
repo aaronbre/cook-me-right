@@ -44,8 +44,6 @@ public class MainActivityTest {
     public void ClickOnRecipeSendsIntent(){
         onView(withId(R.id.main_activity_recipe_list_rv)).perform(RecyclerViewActions.<RecipeListAdapter
                 .RecipeListViewHolder>actionOnItemAtPosition(0, click()));
-        Recipe recipe = new Recipe();
-
         intended(allOf(hasExtra(MainActivity.INTENT_EXTRA_RECIPE, mActivityTestRule.getActivity().testRecipe)));
     }
 }

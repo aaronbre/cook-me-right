@@ -69,16 +69,4 @@ public class RecipeDetailMasterListFragment extends Fragment {
         return rootView;
 
     }
-
-//    private void setUpIngredients(TextView textView) {
-//        List<Ingredient> ingredients = mViewModel.getIngredients();
-//        StringBuilder builder = new StringBuilder();
-//        DecimalFormat dm = new DecimalFormat("0.#");
-//        for(Ingredient ingredient : ingredients){
-//            String line = String.format(Locale.getDefault(),
-//                   dm.format(ingredient.getQuantity()) + " %s %s \n",ingredient.getMeasure(), ingredient.getIngredient());
-//            builder.append(line);
-//        }
-//        textView.setText(builder.toString());
-//    }
 }

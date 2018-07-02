@@ -21,6 +21,7 @@ public class StepDetailActivity extends AppCompatActivity {
     public static final String FRAGMENT_ARGS_STEP = "step";
     public static final String FRAGMENT_ARGS_STEP_LIST = "steps length";
     public static final String FRAGMENT_ARGS_RECIPE_NAME = INTENT_EXTRA_RECIPE_NAME;
+    private static final String RECIPE_DETAIL_TAG = "recipe detail tag";
 
     private Step mStep;
     private List<Step> mSteps;
@@ -39,9 +40,11 @@ public class StepDetailActivity extends AppCompatActivity {
         setTitle(mRecipeName + " - Step " + (mStep.getId()+1));
 
         FragmentManager manager = getSupportFragmentManager();
-        manager.beginTransaction()
-                .add(R.id.master_detail_fragment_container, getRecipeDetailMasterDetailFragment())
-                .commit();
+        if(manager.findFragmentByTag(RECIPE_DETAIL_TAG) == null){
+            manager.beginTransaction()
+                    .add(R.id.master_detail_fragment_container, getRecipeDetailMasterDetailFragment(), RECIPE_DETAIL_TAG)
+                    .commit();
+        }
     }
 
     /**

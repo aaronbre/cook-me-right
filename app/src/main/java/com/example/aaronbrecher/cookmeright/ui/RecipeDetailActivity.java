@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -40,13 +41,19 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
     public static final String INTENT_EXTRA_STEP_LIST = "step list";
     private static final String TAG = RecipeDetailActivity.class.getSimpleName();
     private static final String TAG_DETAIL_FRAGMENT = "detail fragment";
+    private static final String TAG_LIST_FRAGMENT = "list fragment";
 
     private RecipeDetailViewModel mViewModel;
     private Recipe mRecipe;
+    private Step mStep;
     private Toolbar mToolbar;
     private ViewPager mViewPager;
     private TabLayout mTabLayout;
     private Fragment mDetailFragment;
+
+    public void setStep(Step step) {
+        mStep = step;
+    }
 
     //specific XML layouts where made for the tablet and phone, the tablet will show master list
     //layout while the phone will show a separate activity for each
@@ -67,7 +74,6 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
         }
 
         //if the device is a phone will set up a tab layout for ingredients and steps
-        RecipeDetailMasterListFragment masterListFragment = new RecipeDetailMasterListFragment();
         if (!getResources().getBoolean(R.bool.isTablet)) {
 
             mTabLayout = findViewById(R.id.recipe_detail_tab_layout);
@@ -84,20 +90,29 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
             mTabLayout.addOnTabSelectedListener(this);
         }
 
-        //if device is a tablet no tablayout is needed, also will set up the stepDetailFragment
-        //and initialize to the first step
+        // if device is a tablet no tablayout is needed, also will set up the stepDetailFragment
+        // and initialize to the first step, will only create a new Fragment if there is not one
+        // already
         if (getResources().getBoolean(R.bool.isTablet)) {
-            Bundle bundle = new Bundle();
-            bundle.putParcelable(FRAGMENT_ARGS_STEP, mViewModel.getSteps().get(0));
-            bundle.putParcelableArrayList(FRAGMENT_ARGS_STEP_LIST, new ArrayList<>(mViewModel.getSteps()));
-            bundle.putString(FRAGMENT_ARGS_RECIPE_NAME, mViewModel.getRecipe().getName());
-            mDetailFragment = new RecipeDetailMasterDetailFragment();
-            mDetailFragment.setArguments(bundle);
+            FragmentManager manager = getSupportFragmentManager();
+            if(manager.findFragmentByTag(TAG_DETAIL_FRAGMENT ) == null){
+                Bundle bundle = new Bundle();
+                if(mStep == null) mStep = mViewModel.getSteps().get(0);
+                bundle.putParcelable(FRAGMENT_ARGS_STEP, mStep);
+                bundle.putParcelableArrayList(FRAGMENT_ARGS_STEP_LIST, new ArrayList<>(mViewModel.getSteps()));
+                bundle.putString(FRAGMENT_ARGS_RECIPE_NAME, mViewModel.getRecipe().getName());
+                mDetailFragment = new RecipeDetailMasterDetailFragment();
+                mDetailFragment.setArguments(bundle);
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.master_detail_fragment_container, mDetailFragment, TAG_DETAIL_FRAGMENT)
+                        .commit();
+            }
+            if(getSupportFragmentManager().findFragmentByTag(TAG_LIST_FRAGMENT) == null){
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.master_list_fragment_container, new RecipeDetailMasterListFragment(), TAG_LIST_FRAGMENT)
+                        .commit();
+            }
 
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.master_detail_fragment_container, mDetailFragment, TAG_DETAIL_FRAGMENT)
-                    .add(R.id.master_list_fragment_container, masterListFragment)
-                    .commit();
         }
     }
 
@@ -108,8 +123,8 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
         if (getResources().getBoolean(R.bool.isTablet)) {
             RecipeDetailMasterDetailFragment fragment = (RecipeDetailMasterDetailFragment) getSupportFragmentManager()
                     .findFragmentByTag(TAG_DETAIL_FRAGMENT);
-            Step step = (Step) data;
-            fragment.setStep(step);
+            mStep = (Step) data;
+            fragment.setStep(mStep);
             fragment.updateUiAndPlayer();
         } else {
             Intent intent = new Intent(this, StepDetailActivity.class);

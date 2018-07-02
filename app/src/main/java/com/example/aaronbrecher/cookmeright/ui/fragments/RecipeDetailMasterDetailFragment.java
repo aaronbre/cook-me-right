@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import com.example.aaronbrecher.cookmeright.R;
 import com.example.aaronbrecher.cookmeright.models.Step;
+import com.example.aaronbrecher.cookmeright.ui.RecipeDetailActivity;
 import com.example.aaronbrecher.cookmeright.ui.StepDetailActivity;
 import com.example.aaronbrecher.cookmeright.utils.ExoplayerUtils;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -52,6 +53,7 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
     private static final String MEDIA_SESSION_TAG = "cookMeRightMediaSession";
     private static final String POSITION_KEY = "video position";
     private static final String PLAY_KEY = "isPlay";
+    private static final String STEP_KEY = "step";
 
     private SimpleExoPlayerView mExoPlayerView;
     private SimpleExoPlayer mExoPlayer;
@@ -76,18 +78,14 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
 
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (savedInstanceState != null && savedInstanceState.containsKey(POSITION_KEY)) {
-            mVideoPosition = savedInstanceState.getLong(POSITION_KEY);
-            mPlayWhenReady = savedInstanceState.getBoolean(PLAY_KEY);
-        }
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        if (savedInstanceState != null && savedInstanceState.containsKey(POSITION_KEY)) {
+            mVideoPosition = savedInstanceState.getLong(POSITION_KEY);
+            mPlayWhenReady = savedInstanceState.getBoolean(PLAY_KEY);
+            mStep = savedInstanceState.getParcelable(STEP_KEY);
+        }
 
         View rootView = inflater.inflate(R.layout.fragment_master_detail, container, false);
         mExoPlayerView = rootView.findViewById(R.id.player_view);
@@ -97,12 +95,13 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
         mInstructionsHeading = rootView.findViewById(R.id.step_detail_instructions_header);
         mExoPlayerView.setDefaultArtwork(BitmapFactory.decodeResource(getResources(), R.drawable.video_icon));
 
-        mStep = getArguments().getParcelable(StepDetailActivity.FRAGMENT_ARGS_STEP);
+        if (mStep == null)
+            mStep = getArguments().getParcelable(StepDetailActivity.FRAGMENT_ARGS_STEP);
         mStepList = getArguments().getParcelableArrayList(FRAGMENT_ARGS_STEP_LIST);
         mRecipeName = getArguments().getString(FRAGMENT_ARGS_RECIPE_NAME);
 
         initializeMediaSession();
-        mExoPlayer = ExoplayerUtils.initializeExoPlayer(mExoPlayer,getActivity(), this);
+        mExoPlayer = ExoplayerUtils.initializeExoPlayer(mExoPlayer, getActivity(), this);
         mExoPlayerView.setPlayer(mExoPlayer);
         updateUiAndPlayer();
 
@@ -116,6 +115,8 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
                 } else {
                     mStep = mStepList.get(mStep.getId() - 1);
                 }
+                mVideoPosition = 0;
+                mPlayWhenReady = false;
                 updateUiAndPlayer();
             }
         };
@@ -124,6 +125,7 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
 
         return rootView;
     }
+
 
     @Override
     public void onPause() {
@@ -134,8 +136,9 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putLong(POSITION_KEY,mVideoPosition);
+        outState.putLong(POSITION_KEY, mVideoPosition);
         outState.putBoolean(PLAY_KEY, mPlayWhenReady);
+        outState.putParcelable(STEP_KEY, mStep);
     }
 
     private void initializeMediaSession() {
@@ -159,7 +162,10 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
         mInstructions.setText(mStep.getDescription());
         disableIllegalButton();
         getActivity().setTitle(mRecipeName + " - Step " + (mStep.getId() + 1));
-        ExoplayerUtils.setPlayerToNewMediaSource(mExoPlayer, getActivity(), mStep.getVideoURL(),mVideoPosition,mPlayWhenReady);
+        //if it is a tablet need to update the step in activity to properly display in the
+        if (getResources().getBoolean(R.bool.isTablet))
+            ((RecipeDetailActivity) getActivity()).setStep(mStep);
+        ExoplayerUtils.setPlayerToNewMediaSource(mExoPlayer, getActivity(), mStep.getVideoURL(), mVideoPosition, mPlayWhenReady);
     }
 
     //if user is at the first step disable the previous button if last disable the next button
@@ -180,7 +186,6 @@ public class RecipeDetailMasterDetailFragment extends Fragment implements Player
         if (mExoPlayer != null) {
             mVideoPosition = mExoPlayer.getCurrentPosition();
             mPlayWhenReady = mExoPlayer.getPlayWhenReady();
-            mExoPlayer.stop();
             mExoPlayer.release();
             mExoPlayer = null;
         }
