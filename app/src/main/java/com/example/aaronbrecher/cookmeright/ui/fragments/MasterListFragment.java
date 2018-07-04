@@ -27,14 +27,14 @@ import java.util.Locale;
 
 import static android.content.ContentValues.TAG;
 
-public class RecipeDetailMasterListFragment extends Fragment {
+public class MasterListFragment extends Fragment {
     private StepListAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private ListItemClickListener mClickListener;
     private RecipeDetailActivity mActivity;
     private RecipeDetailViewModel mViewModel;
 
-    public RecipeDetailMasterListFragment() {
+    public MasterListFragment() {
 
     }
 

@@ -3,10 +3,9 @@ package com.example.aaronbrecher.cookmeright.adapters;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.widget.Switch;
 
 import com.example.aaronbrecher.cookmeright.ui.fragments.IngredientsTabLayoutFragment;
-import com.example.aaronbrecher.cookmeright.ui.fragments.RecipeDetailMasterListFragment;
+import com.example.aaronbrecher.cookmeright.ui.fragments.MasterListFragment;
 
 public class RecipeDetailPagerAdapter extends FragmentStatePagerAdapter {
 
@@ -23,7 +22,7 @@ public class RecipeDetailPagerAdapter extends FragmentStatePagerAdapter {
             case 0:
                 return new IngredientsTabLayoutFragment();
             case 1:
-                return new RecipeDetailMasterListFragment();
+                return new MasterListFragment();
         }
         return null;
     }

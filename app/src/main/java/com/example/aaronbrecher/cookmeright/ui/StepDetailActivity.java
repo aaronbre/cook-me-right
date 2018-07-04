@@ -7,7 +7,7 @@ import android.os.Bundle;
 
 import com.example.aaronbrecher.cookmeright.R;
 import com.example.aaronbrecher.cookmeright.models.Step;
-import com.example.aaronbrecher.cookmeright.ui.fragments.RecipeDetailMasterDetailFragment;
+import com.example.aaronbrecher.cookmeright.ui.fragments.MasterDetailFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,13 +52,13 @@ public class StepDetailActivity extends AppCompatActivity {
      * @return
      */
     @NonNull
-    private RecipeDetailMasterDetailFragment getRecipeDetailMasterDetailFragment() {
+    private MasterDetailFragment getRecipeDetailMasterDetailFragment() {
         //add the step data to the fragment as an argument
         Bundle bundle = new Bundle();
         bundle.putParcelable(FRAGMENT_ARGS_STEP, mStep);
         bundle.putParcelableArrayList(FRAGMENT_ARGS_STEP_LIST, new ArrayList<>(mSteps));
         bundle.putString(FRAGMENT_ARGS_RECIPE_NAME, mRecipeName);
-        RecipeDetailMasterDetailFragment detailFragment = new RecipeDetailMasterDetailFragment();
+        MasterDetailFragment detailFragment = new MasterDetailFragment();
         detailFragment.setArguments(bundle);
         return detailFragment;
     }

@@ -4,7 +4,6 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,8 +21,8 @@ import com.example.aaronbrecher.cookmeright.ViewModels.RecipeDetailViewModel;
 import com.example.aaronbrecher.cookmeright.adapters.RecipeDetailPagerAdapter;
 import com.example.aaronbrecher.cookmeright.models.Recipe;
 import com.example.aaronbrecher.cookmeright.models.Step;
-import com.example.aaronbrecher.cookmeright.ui.fragments.RecipeDetailMasterDetailFragment;
-import com.example.aaronbrecher.cookmeright.ui.fragments.RecipeDetailMasterListFragment;
+import com.example.aaronbrecher.cookmeright.ui.fragments.MasterDetailFragment;
+import com.example.aaronbrecher.cookmeright.ui.fragments.MasterListFragment;
 import com.example.aaronbrecher.cookmeright.utils.PrefsUtils;
 import com.example.aaronbrecher.cookmeright.widget.RecipeWidgetService;
 
@@ -101,7 +100,7 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
                 bundle.putParcelable(FRAGMENT_ARGS_STEP, mStep);
                 bundle.putParcelableArrayList(FRAGMENT_ARGS_STEP_LIST, new ArrayList<>(mViewModel.getSteps()));
                 bundle.putString(FRAGMENT_ARGS_RECIPE_NAME, mViewModel.getRecipe().getName());
-                mDetailFragment = new RecipeDetailMasterDetailFragment();
+                mDetailFragment = new MasterDetailFragment();
                 mDetailFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.master_detail_fragment_container, mDetailFragment, TAG_DETAIL_FRAGMENT)
@@ -109,7 +108,7 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
             }
             if(getSupportFragmentManager().findFragmentByTag(TAG_LIST_FRAGMENT) == null){
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.master_list_fragment_container, new RecipeDetailMasterListFragment(), TAG_LIST_FRAGMENT)
+                        .add(R.id.master_list_fragment_container, new MasterListFragment(), TAG_LIST_FRAGMENT)
                         .commit();
             }
 
@@ -121,10 +120,12 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
     @Override
     public void onListItemClick(Parcelable data) {
         if (getResources().getBoolean(R.bool.isTablet)) {
-            RecipeDetailMasterDetailFragment fragment = (RecipeDetailMasterDetailFragment) getSupportFragmentManager()
+            MasterDetailFragment fragment = (MasterDetailFragment) getSupportFragmentManager()
                     .findFragmentByTag(TAG_DETAIL_FRAGMENT);
             mStep = (Step) data;
             fragment.setStep(mStep);
+            fragment.setPlayWhenReady(false);
+            fragment.setVideoPosition(0);
             fragment.updateUiAndPlayer();
         } else {
             Intent intent = new Intent(this, StepDetailActivity.class);
