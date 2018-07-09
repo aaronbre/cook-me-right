@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.widget.RemoteViewsService;
 
+import com.example.aaronbrecher.cookmeright.R;
 import com.example.aaronbrecher.cookmeright.models.Recipe;
 import com.example.aaronbrecher.cookmeright.utils.PrefsUtils;
 
@@ -41,6 +42,7 @@ public class RecipeWidgetService extends IntentService {
         AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
         int [] widgetIds = widgetManager.getAppWidgetIds(new ComponentName(this, RecipeWidgetProvider.class));
         Recipe recipe = PrefsUtils.getRecipeFromPrefs(PreferenceManager.getDefaultSharedPreferences(this));
+        widgetManager.notifyAppWidgetViewDataChanged(widgetIds, R.id.appwidget_text_ingredients);
         RecipeWidgetProvider.updateRecipeWidgets(this, widgetManager, widgetIds, recipe);
     }
 }

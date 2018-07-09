@@ -11,10 +11,11 @@
         android:textColor="@android:color/white"
         android:textSize="24sp" />
 
-    <TextView
+    <ListView
         android:id="@+id/appwidget_text_ingredients"
-        style="@style/IngredientsBody"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="@dimen/margin_small"/>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_small"
+        android:textColor="@android:color/white" />
 
 </LinearLayout>

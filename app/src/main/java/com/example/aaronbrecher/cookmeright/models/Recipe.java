@@ -135,7 +135,7 @@ public class Recipe implements Parcelable {
 
 
     //TODO remove after testing...
-    public static Recipe getMockRecipe(Context context){
+    public static Recipe getMockRecipe(){
         Gson gson = new Gson();
         String json = "{\n" +
                 "    \"id\": 1,\n" +

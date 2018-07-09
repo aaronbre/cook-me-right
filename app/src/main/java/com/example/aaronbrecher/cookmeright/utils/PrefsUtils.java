@@ -20,4 +20,9 @@ public class PrefsUtils {
         String recipeJson = preferences.getString(PREFS_RECIPE_KEY, "");
         return Recipe.convertFromJson(recipeJson);
     }
+
+    public static boolean prefsHasRecipe(SharedPreferences preferences){
+        if (preferences.contains(PREFS_RECIPE_KEY)) return true;
+        return false;
+    }
 }

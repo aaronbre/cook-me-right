@@ -42,6 +42,7 @@
         </receiver>
 
         <service android:name=".widget.RecipeWidgetService" />
+        <service android:name=".widget.WidgetRemoteViewsService" />
     </application>
 
 </manifest>

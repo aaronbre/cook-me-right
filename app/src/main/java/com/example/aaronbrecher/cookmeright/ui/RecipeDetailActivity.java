@@ -1,16 +1,17 @@
 package com.example.aaronbrecher.cookmeright.ui;
 
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -28,10 +29,6 @@ import com.example.aaronbrecher.cookmeright.widget.RecipeWidgetService;
 
 import java.util.ArrayList;
 
-import static com.example.aaronbrecher.cookmeright.ui.StepDetailActivity.FRAGMENT_ARGS_RECIPE_NAME;
-import static com.example.aaronbrecher.cookmeright.ui.StepDetailActivity.FRAGMENT_ARGS_STEP;
-import static com.example.aaronbrecher.cookmeright.ui.StepDetailActivity.FRAGMENT_ARGS_STEP_LIST;
-
 public class RecipeDetailActivity extends AppCompatActivity implements ListItemClickListener, TabLayout.OnTabSelectedListener {
 
     public static final String INTENT_EXTRA_RECIPE = "recipe";
@@ -43,16 +40,9 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
     private static final String TAG_LIST_FRAGMENT = "list fragment";
 
     private RecipeDetailViewModel mViewModel;
-    private Recipe mRecipe;
-    private Step mStep;
-    private Toolbar mToolbar;
     private ViewPager mViewPager;
     private TabLayout mTabLayout;
     private Fragment mDetailFragment;
-
-    public void setStep(Step step) {
-        mStep = step;
-    }
 
     //specific XML layouts where made for the tablet and phone, the tablet will show master list
     //layout while the phone will show a separate activity for each
@@ -63,13 +53,16 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
 
         //set up a viewModel this will be useful working with multiple fragments especially
         //for the tablet where everything will be in this activity
-        mRecipe = getIntent().getParcelableExtra(INTENT_EXTRA_RECIPE);
+        Recipe recipe = getIntent().getParcelableExtra(INTENT_EXTRA_RECIPE);
         mViewModel = ViewModelProviders.of(this).get(RecipeDetailViewModel.class);
-        if (mRecipe != null) {
-            setTitle(mRecipe.getName());
-            mViewModel.setRecipe(mRecipe);
-            mViewModel.setSteps(mRecipe.getSteps());
-            mViewModel.setIngredients(mRecipe.getIngredients());
+        if (recipe != null) {
+            setTitle(recipe.getName());
+            mViewModel.setRecipe(recipe);
+            mViewModel.setSteps(recipe.getSteps());
+            mViewModel.setIngredients(recipe.getIngredients());
+            mViewModel.setRecipeName(recipe.getName());
+            //only set the current index if this is the first time loading activity(i.e. don't set on orientation change)
+            if(mViewModel.getCurrentStepIndex().getValue() == null) mViewModel.setCurrentStepIndex(0);
         }
 
         //if the device is a phone will set up a tab layout for ingredients and steps
@@ -93,15 +86,16 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
         // and initialize to the first step, will only create a new Fragment if there is not one
         // already
         if (getResources().getBoolean(R.bool.isTablet)) {
+            mViewModel.getCurrentStepIndex().observe(this, new Observer<Integer>() {
+                @Override
+                public void onChanged(@Nullable Integer integer) {
+                    setTitle(mViewModel.getRecipeName() + " - Step " + (integer+1));
+                }
+            });
+
             FragmentManager manager = getSupportFragmentManager();
             if(manager.findFragmentByTag(TAG_DETAIL_FRAGMENT ) == null){
-                Bundle bundle = new Bundle();
-                if(mStep == null) mStep = mViewModel.getSteps().get(0);
-                bundle.putParcelable(FRAGMENT_ARGS_STEP, mStep);
-                bundle.putParcelableArrayList(FRAGMENT_ARGS_STEP_LIST, new ArrayList<>(mViewModel.getSteps()));
-                bundle.putString(FRAGMENT_ARGS_RECIPE_NAME, mViewModel.getRecipe().getName());
                 mDetailFragment = new MasterDetailFragment();
-                mDetailFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.master_detail_fragment_container, mDetailFragment, TAG_DETAIL_FRAGMENT)
                         .commit();
@@ -120,16 +114,12 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
     @Override
     public void onListItemClick(Parcelable data) {
         if (getResources().getBoolean(R.bool.isTablet)) {
-            MasterDetailFragment fragment = (MasterDetailFragment) getSupportFragmentManager()
-                    .findFragmentByTag(TAG_DETAIL_FRAGMENT);
-            mStep = (Step) data;
-            fragment.setStep(mStep);
-            fragment.setPlayWhenReady(false);
-            fragment.setVideoPosition(0);
-            fragment.updateUiAndPlayer();
+            Step step = (Step) data;
+            mViewModel.setCurrentStepIndex(step.getId());
         } else {
             Intent intent = new Intent(this, StepDetailActivity.class);
-            intent.putExtra(INTENT_EXTRA_STEP, data);
+            Step step = (Step) data;
+            intent.putExtra(INTENT_EXTRA_STEP, step.getId());
             intent.putParcelableArrayListExtra(INTENT_EXTRA_STEP_LIST, new ArrayList<>(mViewModel.getSteps()));
             intent.putExtra(INTENT_EXTRA_RECIPE_NAME, mViewModel.getRecipe().getName());
             startActivity(intent);
@@ -148,7 +138,7 @@ public class RecipeDetailActivity extends AppCompatActivity implements ListItemC
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.menu_item_add_to_widget) {
-            PrefsUtils.addRecipeToPrefs(mRecipe, PreferenceManager.getDefaultSharedPreferences(this));
+            PrefsUtils.addRecipeToPrefs(mViewModel.getRecipe(), PreferenceManager.getDefaultSharedPreferences(this));
             Toast.makeText(this, R.string.added_to_widget_toast, Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, RecipeWidgetService.class);
             intent.setAction(RecipeWidgetService.ACTION_UPDATE_RECIPE_WIDGET);

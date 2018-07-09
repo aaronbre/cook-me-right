@@ -1,5 +1,7 @@
 package com.example.aaronbrecher.cookmeright.ui.fragments;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,8 +11,6 @@ import android.media.session.PlaybackState;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.constraint.ConstraintLayout;
-import android.support.constraint.ConstraintSet;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -20,13 +20,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.example.aaronbrecher.cookmeright.R;
+import com.example.aaronbrecher.cookmeright.ViewModels.RecipeDetailViewModel;
 import com.example.aaronbrecher.cookmeright.models.Step;
-import com.example.aaronbrecher.cookmeright.ui.RecipeDetailActivity;
-import com.example.aaronbrecher.cookmeright.ui.StepDetailActivity;
 import com.example.aaronbrecher.cookmeright.utils.ExoplayerUtils;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
@@ -36,12 +34,6 @@ import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
-import com.google.android.exoplayer2.util.Util;
-
-import java.util.List;
-
-import static com.example.aaronbrecher.cookmeright.ui.StepDetailActivity.FRAGMENT_ARGS_RECIPE_NAME;
-import static com.example.aaronbrecher.cookmeright.ui.StepDetailActivity.FRAGMENT_ARGS_STEP_LIST;
 
 public class MasterDetailFragment extends Fragment implements Player.EventListener {
     private static final String TAG = MasterDetailFragment.class.getSimpleName();
@@ -57,57 +49,48 @@ public class MasterDetailFragment extends Fragment implements Player.EventListen
     private MediaSessionCompat mMediaSession;
 
     private Step mStep;
-    private long mVideoPosition;
-    private List<Step> mStepList;
-    private String mRecipeName;
+    private RecipeDetailViewModel mViewModel;
     private TextView mInstructionsHeading;
     private TextView mInstructions;
     private PlaybackStateCompat.Builder mStateBuilder;
-    private boolean mPlayWhenReady;
-
-    public void setStep(Step step) {
-        mStep = step;
-    }
-
-    public void setVideoPosition(long videoPosition) {
-        mVideoPosition = videoPosition;
-    }
-
-    public void setPlayWhenReady(boolean playWhenReady) {
-        mPlayWhenReady = playWhenReady;
-    }
 
     public MasterDetailFragment() {
 
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mViewModel = ViewModelProviders.of(getActivity()).get(RecipeDetailViewModel.class);
+        mViewModel.getCurrentStepIndex().observe(this, getObserver());
+    }
+
     //this code is in onResume for because when app is sent to background onCreateView is not called
-    //resulting in null pointer exception and other bugs...
+    //resulting in null pointer exception for the exoplayer and other bugs, the code is only run if
+    //the app was sent to the background not on orientation change and original load, this is done by
+    //checking the viewModel live data, if the activity is just sent to the background the value will
+    //not be null.
     @Override
     public void onResume() {
         super.onResume();
-        mExoPlayer = ExoplayerUtils.initializeExoPlayer(mExoPlayer, getActivity(), this);
-        mExoPlayerView.setPlayer(mExoPlayer);
-        initializeMediaSession();
-        updateUiAndPlayer();
+        if (mExoPlayer == null && mViewModel.getCurrentStepIndex().getValue() != null) {
+            mExoPlayer = ExoplayerUtils.initializeExoPlayer(getActivity(), this);
+            mExoPlayerView.setPlayer(mExoPlayer);
+            initializeMediaSession();
+            updateUiAndPlayer();
+        }
         Log.d(TAG, "onResume: called");
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        if (savedInstanceState != null && savedInstanceState.containsKey(POSITION_KEY)) {
-            mVideoPosition = savedInstanceState.getLong(POSITION_KEY);
-            mPlayWhenReady = savedInstanceState.getBoolean(PLAY_KEY);
-            mStep = savedInstanceState.getParcelable(STEP_KEY);
-        }
-        Log.d(TAG, "onCreateView: called");
         View rootView = inflater.inflate(R.layout.fragment_master_detail, container, false);
         mExoPlayerView = rootView.findViewById(R.id.player_view);
         mExoPlayerView.setDefaultArtwork(BitmapFactory.decodeResource(getResources(), R.drawable.video_icon));
 
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT
-                || getResources().getBoolean(R.bool.isTablet)){
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT
+                || getResources().getBoolean(R.bool.isTablet)) {
             mPreviousButton = rootView.findViewById(R.id.step_detail_previous);
             mNextButton = rootView.findViewById(R.id.step_detail_next);
             mInstructions = rootView.findViewById(R.id.step_detail_instructions);
@@ -117,24 +100,17 @@ public class MasterDetailFragment extends Fragment implements Player.EventListen
                 @Override
                 public void onClick(View view) {
                     Button button = (Button) view;
-                    if (button.getText().toString().equals(getString(R.string.button_next))) {
-                        mStep = mStepList.get(mStep.getId() + 1);
-                    } else {
-                        mStep = mStepList.get(mStep.getId() - 1);
-                    }
-                    mVideoPosition = 0;
-                    mPlayWhenReady = false;
-                    updateUiAndPlayer();
+                    int value;
+                    if (button.getText().toString().equals(getString(R.string.button_next))) value = 1;
+                    else value = -1;
+                    //posting the new value will update the UI etc. via the observer
+                    mViewModel.setCurrentStepIndex(mViewModel.getCurrentStepIndex().getValue() + value);
                 }
             };
             mPreviousButton.setOnClickListener(listener);
             mNextButton.setOnClickListener(listener);
         }
 
-        if (mStep == null)
-            mStep = getArguments().getParcelable(StepDetailActivity.FRAGMENT_ARGS_STEP);
-        mStepList = getArguments().getParcelableArrayList(FRAGMENT_ARGS_STEP_LIST);
-        mRecipeName = getArguments().getString(FRAGMENT_ARGS_RECIPE_NAME);
         return rootView;
     }
 
@@ -145,11 +121,15 @@ public class MasterDetailFragment extends Fragment implements Player.EventListen
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mViewModel.getCurrentStepIndex().removeObservers(this);
+    }
+
+    @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putLong(POSITION_KEY, mVideoPosition);
-        outState.putBoolean(PLAY_KEY, mPlayWhenReady);
-        outState.putParcelable(STEP_KEY, mStep);
+        mViewModel.setPreviousIndex(mViewModel.getCurrentStepIndex().getValue());
     }
 
     private void initializeMediaSession() {
@@ -169,26 +149,28 @@ public class MasterDetailFragment extends Fragment implements Player.EventListen
     //set up the text view an player with the data from the step
     //also update the title of the activity to show the recipe name and step num
     public void updateUiAndPlayer() {
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ||
-                getResources().getBoolean(R.bool.isTablet)){
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ||
+                getResources().getBoolean(R.bool.isTablet)) {
             mInstructionsHeading.setText(mStep.getShortDescription());
             mInstructions.setText(mStep.getDescription());
-            disableIllegalButton();
         }
-        getActivity().setTitle(mRecipeName + " - Step " + (mStep.getId() + 1));
-        //if it is a tablet need to update the step in activity to properly display in the
-        if (getResources().getBoolean(R.bool.isTablet)) ((RecipeDetailActivity) getActivity()).setStep(mStep);
-        ExoplayerUtils.setPlayerToNewMediaSource(mExoPlayer, getActivity(), mStep.getVideoURL(), mVideoPosition, mPlayWhenReady);
+        if (mExoPlayer == null) {
+            mExoPlayer = ExoplayerUtils.initializeExoPlayer(getActivity(), this);
+            mExoPlayerView.setPlayer(mExoPlayer);
+            initializeMediaSession();
+        }
+        ExoplayerUtils.setPlayerToNewMediaSource(mExoPlayer, getActivity(), mStep.getVideoURL(),
+                mStep.getThumbnailURL(), mViewModel.getVideoPosition(), mViewModel.isPlayWhenReady());
     }
 
     //if user is at the first step disable the previous button if last disable the next button
-    private void disableIllegalButton() {
-        if (mStep.getId() == 0) {
+    private void disableIllegalButton(int index) {
+        if (index == 0) {
             mPreviousButton.setEnabled(false);
         } else {
             mPreviousButton.setEnabled(true);
         }
-        if (mStep.getId() == mStepList.size() - 1) {
+        if (index == mViewModel.getSteps().size() - 1) {
             mNextButton.setEnabled(false);
         } else {
             mNextButton.setEnabled(true);
@@ -197,8 +179,8 @@ public class MasterDetailFragment extends Fragment implements Player.EventListen
 
     private void releasePlayer() {
         if (mExoPlayer != null) {
-            mVideoPosition = mExoPlayer.getCurrentPosition();
-            mPlayWhenReady = mExoPlayer.getPlayWhenReady();
+            mViewModel.setVideoPosition(mExoPlayer.getCurrentPosition());
+            mViewModel.setPlayWhenReady(mExoPlayer.getPlayWhenReady());
             mExoPlayer.release();
             mExoPlayer = null;
         }
@@ -296,4 +278,23 @@ public class MasterDetailFragment extends Fragment implements Player.EventListen
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * end exoplayer listener functions
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    private Observer<Integer> getObserver() {
+        return new Observer<Integer>() {
+            @Override
+            public void onChanged(@Nullable Integer integer) {
+                //check if this is being called on orientation change, if so there was no change
+                //so do not reset the video position
+                Log.d(TAG, "onChanged: called");
+                if (mViewModel.getPreviousIndex() != integer) {
+                    mViewModel.setPlayWhenReady(false);
+                    mViewModel.setVideoPosition(0);
+                    if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT
+                            || getResources().getBoolean(R.bool.isTablet)) disableIllegalButton(integer);
+                }
+                mStep = mViewModel.getSteps().get(integer);
+                updateUiAndPlayer();
+            }
+        };
+    }
 }

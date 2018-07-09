@@ -3,6 +3,7 @@ package com.example.aaronbrecher.cookmeright.ui;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import com.example.aaronbrecher.cookmeright.adapters.RecipeListAdapter;
 import com.example.aaronbrecher.cookmeright.models.Recipe;
 import com.example.aaronbrecher.cookmeright.network.RecipeApiUtils;
 import com.example.aaronbrecher.cookmeright.network.RecipeService;
+import com.example.aaronbrecher.cookmeright.utils.PrefsUtils;
 
 import java.util.List;
 
@@ -103,5 +105,9 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
         Intent intent = new Intent(this,RecipeDetailActivity.class);
         intent.putExtra(INTENT_EXTRA_RECIPE, recipe);
         startActivity(intent);
+    }
+
+    public void initializeWidgetRecipe(){
+
     }
 }

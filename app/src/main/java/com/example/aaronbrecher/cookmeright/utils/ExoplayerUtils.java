@@ -17,22 +17,23 @@ import com.google.android.exoplayer2.util.Util;
 public class ExoplayerUtils {
     private static final String MEDIA_SESSION_TAG = "cookMeRightMediaSession";
 
-    public static SimpleExoPlayer initializeExoPlayer(SimpleExoPlayer exoPlayer, Context context, Player.EventListener listener) {
-        if (exoPlayer == null) {
-            TrackSelector trackSelector = new DefaultTrackSelector();
-            exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector);
-            exoPlayer.addListener(listener);
-        }
+    public static SimpleExoPlayer initializeExoPlayer(Context context, Player.EventListener listener) {
+        TrackSelector trackSelector = new DefaultTrackSelector();
+        SimpleExoPlayer exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector);
+        exoPlayer.addListener(listener);
         return exoPlayer;
     }
 
-    public static void setPlayerToNewMediaSource(SimpleExoPlayer exoPlayer, Context context, String uriString, long position, boolean isPlay) {
-        exoPlayer.stop();
+    public static void setPlayerToNewMediaSource(SimpleExoPlayer exoPlayer, Context context, String uriString, String secondaryUri, long position, boolean isPlay) {
         String userAgent = Util.getUserAgent(context, "CookMeRight");
         //if there is no associated video remove the previous video from the player
         if (uriString == null || uriString.isEmpty()) {
-            exoPlayer.prepare(null);
-            return;
+            if (secondaryUri == null || secondaryUri.isEmpty()) {
+                exoPlayer.prepare(null);
+                return;
+            } else {
+                uriString = secondaryUri;
+            }
         }
         Uri movieUri = Uri.parse(uriString);
         MediaSource mediaSource = new ExtractorMediaSource(movieUri, new DefaultDataSourceFactory(context, userAgent),
