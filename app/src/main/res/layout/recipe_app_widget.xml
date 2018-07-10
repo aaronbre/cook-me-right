@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/appwidget_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
@@ -12,7 +13,7 @@
         android:textSize="24sp" />
 
     <ListView
-        android:id="@+id/appwidget_text_ingredients"
+        android:id="@+id/appwidget_text_ingredients_list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_small"

@@ -11,8 +11,6 @@ import com.example.aaronbrecher.cookmeright.R;
 import com.example.aaronbrecher.cookmeright.models.Recipe;
 import com.example.aaronbrecher.cookmeright.ui.MainActivity;
 import com.example.aaronbrecher.cookmeright.ui.RecipeDetailActivity;
-import com.example.aaronbrecher.cookmeright.utils.PrefsUtils;
-import com.example.aaronbrecher.cookmeright.utils.UiUtils;
 
 /**
  * Implementation of App Widget functionality.
@@ -47,10 +45,11 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
             intent.putExtra(RecipeDetailActivity.INTENT_EXTRA_RECIPE, recipe);
             remoteViews.setTextViewText(R.id.appwidget_text_heading, recipe.getName());
             Intent adapterIntent = new Intent(context, WidgetRemoteViewsService.class);
-            remoteViews.setRemoteAdapter(R.id.appwidget_text_ingredients, adapterIntent);
+            remoteViews.setRemoteAdapter(R.id.appwidget_text_ingredients_list, adapterIntent);
         }
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        remoteViews.setOnClickPendingIntent(R.id.appwidget_text_ingredients, pendingIntent);
+        remoteViews.setOnClickPendingIntent(R.id.appwidget_container, pendingIntent);
+        remoteViews.setPendingIntentTemplate(R.id.appwidget_text_ingredients_list, pendingIntent);
         return remoteViews;
     }
 

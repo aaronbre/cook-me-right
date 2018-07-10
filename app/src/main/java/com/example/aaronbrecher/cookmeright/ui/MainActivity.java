@@ -21,6 +21,7 @@ import com.example.aaronbrecher.cookmeright.models.Recipe;
 import com.example.aaronbrecher.cookmeright.network.RecipeApiUtils;
 import com.example.aaronbrecher.cookmeright.network.RecipeService;
 import com.example.aaronbrecher.cookmeright.utils.PrefsUtils;
+import com.example.aaronbrecher.cookmeright.widget.RecipeWidgetService;
 
 import java.util.List;
 
@@ -59,6 +60,10 @@ public class MainActivity extends AppCompatActivity implements ListItemClickList
             @Override
             public void onResponse(@NonNull Call<List<Recipe>> call, @NonNull Response<List<Recipe>> response) {
                 List<Recipe> recipes = response.body();
+                if(!PrefsUtils.prefsHasRecipe(PreferenceManager.getDefaultSharedPreferences(MainActivity.this))){
+                    PrefsUtils.addRecipeToPrefs(recipes.get(0), PreferenceManager.getDefaultSharedPreferences(MainActivity.this));
+                    RecipeWidgetService.startActionUpdateWidget(MainActivity.this);
+                }
                 testRecipe = recipes.get(0);
                 mAdapter.swapLists(recipes);
                 hideLoadingAndShowList();

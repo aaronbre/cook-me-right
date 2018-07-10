@@ -58,9 +58,10 @@ class WidgetListRemoteViewsFactory implements RemoteViewsService.RemoteViewsFact
         Ingredient ingredient = mIngredients.get(position);
         DecimalFormat dm = new DecimalFormat("0.#");
         String ingredientString = String.format(Locale.getDefault(),
-                dm.format(ingredient.getQuantity()) + " %s %s \n",ingredient.getMeasure(), ingredient.getIngredient());
+                dm.format(ingredient.getQuantity()) + " %s %s",ingredient.getMeasure(), ingredient.getIngredient());
         RemoteViews view = new RemoteViews(mContext.getPackageName(), R.layout.widget_list_item);
-        view.setTextViewText(R.id.widget_list_item, ingredientString);
+        view.setTextViewText(R.id.widget_list_item_text, ingredientString);
+        view.setOnClickFillInIntent(R.id.widget_list_item_text, new Intent());
         return view;
     }
 
